@@ -1,0 +1,7 @@
+/sequences/8K/BodeMuseum10bit_7680x4320_60fps_600f.yuv
+/sequences/8K/NeptuneFountain210bit_7680x4320_60fps_600f.yuv
+/sequences/8K/NeptuneFountain310bit_7680x4320_60fps_600f.yuv
+/sequences/8K/OberbaumSpree10bit_7680x4320_60fps_600f.yuv
+/sequences/8K/QuadrigaTree10bit_7680x4320_60fps_600f.yuv
+/sequences/8K/SubwayTree10bit_7680x4320_60fps_600f.yuv
+/sequences/8K/TiergartenParkway10bit_7680x4320_60fps_600f.yuv
