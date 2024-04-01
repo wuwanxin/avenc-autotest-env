@@ -9,7 +9,7 @@ from work_env_utils import WorkingInfoManager
 from test_list_tools import testlistManager
 from shutil import copyfile
 class workspace_utils:
-    def __init__(self,cwd="",platform="REF_C",desc="hevc",space_name_suffix=""):
+    def __init__(self,cwd="",platform="X86-64",desc="hevc",space_name_suffix="",space_cwd="/source/"):
         #startTime = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         self.space_name_suffix = space_name_suffix
         if self.space_name_suffix=="":
@@ -20,7 +20,7 @@ class workspace_utils:
         self.platform = platform
         self.spaceName = "WS_"+platform+"_"+str(self.space_name_suffix)
         print "[WORKSPACE]",self.spaceName
-        self.spacePath = ''.join ( (cwd,"/",self.spaceName) )
+        self.spacePath = ''.join ( (space_cwd,"/",self.spaceName) )
         self.priv_testlist_path = self.spacePath+"/testlist_priv.txt"
         self.note_path = self.spacePath+ "/" +str(desc) +"_note.txt"
         self.desc = desc
@@ -30,7 +30,7 @@ class workspace_utils:
         self.workingInfoObj = NotImplemented
         #self.boot_workspace()
 
-    def gen_testlist_manager_instance(self,size=0x40000000):
+    def gen_testlist_manager_instance(self,size=0x4000000000):
         self.testlist_manager = testlistManager(self.priv_testlist_path,size)
 
         return self.testlist_manager
@@ -116,7 +116,7 @@ class workspace_utils:
 
     #通过open_workspace的参数src_suffix，选择哪个文件为当前运行的default文件
     def __src_switch_by_suffix(self,src_suffix):
-        print src_suffix
+        #print src_suffix
         if src_suffix is None:
             src_testlist_path = self.cwd+"/./src/default/testlist.txt"
             src_default_cfg_path = self.cwd+"/./src/default/default.cfg"

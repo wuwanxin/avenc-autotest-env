@@ -119,7 +119,7 @@ class testlistManager:
             file_path_name = re.sub(r'^#{1,}', "", org).rstrip()
             case = file_path_name
         if self.size_limit != None:
-            print os.getcwd()
+            #print os.getcwd()
             fileSize = os.path.getsize(case)
             if fileSize > self.size_limit:
                 self.__sign_error_testfile(org,"###")
@@ -189,13 +189,14 @@ class testlistManager:
         #print ">>>func>>>testlistManager::__check_current_status() =>  current_testfile ",self.current_testfile
         #print ">>>func>>>testlistManager::__check_current_status() =>  param find_last ",find_last
         #print ">>>func>>>testlistManager::__check_current_status() =>  param find_next ",find_next
-        print "[WORKING OBJ] => ",self.current_testfile
         print "\n\n\n"
+        print "[WORKING OBJ] => ",self.current_testfile
+        
 
 
 
     def __get_testlist_lines(self):
-        #print self.priv_testlist_path
+        print "[get and check testlist]start."
 
         fp = open(self.priv_testlist_path,"r")
         lines = fp.readlines()
@@ -205,11 +206,12 @@ class testlistManager:
             if line.strip(" ").rstrip() == "":
                 continue
             line = line.rstrip()
-            print "line::",line
+            #print "line::",line
             if re.match(r'^#{2,}[^#]', line, re.M) == None:
                 if self.__size_check(line):
                     __through_lines.append(line)
         self.__through_lines = __through_lines
+        print "[get and check testlist]down."
         return self.__through_lines
 
     def finish_current_testfile(self):
@@ -249,7 +251,7 @@ class testlistFileter:
             else:
                 if self.__target:
                     self.__kwargs["testcase"] = testcase
-                    print self.__kwargs
+                    #print self.__kwargs
                     return self.__target(**self.__kwargs)
                 else:
                     print "[error]...__target should be implemented.."

@@ -32,6 +32,9 @@ class parse_utils:
                 key = " "+short_key
             cmd = str(key) + " " + str(value)
             #print cmd
+        elif re.match(r"\s{0,}[^#]+?",cfg_line) !=None:
+            cfg = cfg_line.split("?")[-1]
+            cmd = " "+cfg.strip(" ").strip("\n")
         return cmd
 
     
@@ -60,7 +63,7 @@ class parse_utils:
         if new_line==None:
             new_line = org_line
         else:
-            print "==================change_line===========>>>  " + new_line
+            print "change_line>>>  " + new_line
         return new_line
 
     @staticmethod
@@ -90,7 +93,7 @@ class parse_utils:
         if new_line == None:
             new_line = org_line
         else:
-            print "==================change_line===========>>>  " + new_line
+            print "change_line>>>  " + new_line
         return new_line
 
     @staticmethod
@@ -168,7 +171,7 @@ class parse_utils:
         if new_line==None:
             new_line = org_line
         else:
-            print "==change_line==>>>  " + new_line
+            print "change_line>>>  " + new_line
         return new_line
 class cfg_processer:
     def __init__(self):
@@ -206,11 +209,11 @@ class cfg_processer:
         for line in cfg_lines:
             line = line.strip("\n").strip("\r")
             cmdline_agrs = cmdline_agrs + parse_utils.parse_cmdline(line).strip("\n").strip("\r")
-        print "\n\n\n======================>>cmdline<<========================="
+        print "\n\n\n============================================>>cmdline<<==============================================="
         #2020-06-10：添加换行符，该符号与解析函数是对应起来的
         cmdline = "".join((cmdline_title, cmdline_agrs))+"\n"
         print cmdline
-        print "======================>>cmdline<<========================="
+        print "============================================>>cmdline<<==============================================="
         if output_args_path != "":
             args = open(output_args_path,"w")
             args.write(cmdline)

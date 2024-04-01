@@ -20,7 +20,7 @@ class group_cfg:
 
     def gen_markInfo_jsonfile(self,workspace=""):
         marks = self.env["mark"]
-        file_path = self.env_path+"/"+workspace+"/markInfo.json"
+        file_path = workspace+"/markInfo.json"
         file = open(file_path, "w")
         json.dump(marks,file)
         file.close()

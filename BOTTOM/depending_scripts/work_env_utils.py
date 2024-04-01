@@ -77,6 +77,9 @@ class WorkingInfoManager:
         self.mark_type_id = mark_type_id
         self.turn_id = turn_id
         self.work_times = work_times
+        print "mark_type_id::",self.mark_type_id
+        print "turn_id::",self.turn_id
+        print "work_times::",self.work_times
 
     
     def update_workingInfo_counter(self,step):
@@ -133,7 +136,7 @@ class WorkingInfoManager:
         file.close()
         id = 0
         for mark in fileJson:
-            print mark
+            #print mark
             k = mark["mark_name"]
             #param = mark["mark_arr"]
             # "#"和"+"表示不测，具体含义可以用户自定义，目前该标识在其他地方都没用
