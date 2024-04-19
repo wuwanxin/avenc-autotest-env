@@ -9,12 +9,6 @@ import datetime
 import json,shutil
 import shutil
 #print "[RUNING CWD]",os.getcwd()
-file = open("../driver/path.json","rb")
-fileJson = json.load(file)
-file.close()
-#print fileJson
-top = fileJson["top"]
-top = "/../driver/"+top
 
 #MAIN_FLAG_ADDR = cfg.FORMAT_ID_ADDR_START
 #CHANGE_MAIN_TESTENV = cfg.CHANGE_MAIN_TESTENV
@@ -23,11 +17,10 @@ codec_id = {
     "hevc":0,
 }
 
-
 cwd_path = os.path.abspath(sys.argv[0])
 cwd = os.path.dirname(cwd_path)
 print "[RUNING CWD]",cwd
-sys.path.append(cwd+top+"/depending_scripts")
+
 
 #print dir()
 #print __package__
@@ -43,15 +36,29 @@ import group_configuration_tool
 
 
 codec = ["hevc","avc",'jpeg']
-c_model_dir = "c_model/"
+shell_dir = "shell/"
 load_dir = "load/"
-cmdline_title_arr = ["sevc_host_warp"]
+cmdline_title_arr = ["host"]
 Persize = 0x9000000
 #影响c环境下的命名的路径,除c模型以外的文件
-paths = ["c_model/sevc_host"]
+paths = ["shell/readme"]
 #自动化测试中的中间文件，该文件夹可以直接删除
 tmp_dir = ".tmp"
 
+def print_menu(options):
+    for i, option in enumerate(options, start=1):
+        print("{}) {}".format(i, option))
+
+def get_user_choice(options):
+    user_input = None
+    while user_input not in range(1, len(options) + 1):
+        try:
+            user_input = int(raw_input("enter a num (1-{}): ".format(len(options))))
+            if user_input not in range(1, len(options) + 1):
+                print("error, input again")
+        except ValueError:
+            print("error, please input a number")
+    return options[user_input - 1]
 
 #该类后期需整理，目前暂时调通用
 class curr_info:
@@ -61,19 +68,20 @@ class curr_info:
         self.dir = dir
         self.platform = platform
         self.bash_id = bash_id
+        
         #获取当前运行的env
-        file_name = ""
-        #该文件是上一个py执行后产生的
-        if self.platform == "FPGA":
-            file_name = self.dir+"/fpga_run_env.log"
-        elif self.platform == "REF_C":
-            file_name = self.dir+"/refc_run_env.log"
-        run_log = open(file_name,"r")
-        env = run_log.read()
-        run_log.close()
-        #os.remove(file_name)
+        #得到self.group
+        file = open(self.dir+"/__group_confiuration__.json","rb")
+        group = json.load(file)
+        file.close()
+        envs = group["envs"]
+        options = []
+        for env in envs:
+            options.append(env["env_name"]+"$"+"hm")
+        print_menu(options)
+        selection = get_user_choice(options)
 
-        s = env.split("/")[-1].split("$")
+        s = selection.split("/")[-1].split("$")
         self.running_env_name = s[0]
         self.running_env_src_type = None
 
@@ -171,6 +179,11 @@ def workspace_naming(file_path):
     return naming
 def open_env(run_platform,set_cwd,set_space_name_suffix="",bash_id=0,print_only=0):
 
+    print "======================================"
+    print "run_platform:",run_platform
+    print "set_cwd:",set_cwd
+    print "set_space_name_suffix:",set_space_name_suffix
+    print "======================================"
     #把环境的基本信息配置给当前的上下文运行环境
     my_curr_info = curr_info(dir=set_cwd,platform=run_platform,bash_id=bash_id)
     setattr(my_curr_info,"platform",run_platform)
@@ -183,31 +196,24 @@ def open_env(run_platform,set_cwd,set_space_name_suffix="",bash_id=0,print_only=
     
     #根据plaorm准备当前环境需要的命名
     run_codec_id = codec_id[run_codec]
-    paths.append(c_model_dir+cmdline_title_arr[run_codec_id])
+    paths.append(shell_dir+cmdline_title_arr[run_codec_id])
+    
     print "[REF_C_ID_IMPACT]",paths
     # **_run.py代码中的命名优先级最高
     if set_space_name_suffix=="":
-        if run_platform == "FPGA":
-            s = workspace_naming(set_cwd+"/../workspace_naming.txt")
-            #s_name = s["src_type"].upper()+"_"+s["suffix"]
-            #set_space_name_suffix = s_name
-        elif run_platform == "REF_C":
-            #set_space_name_suffix = workspace_naming(set_cwd+"/../workspace_naming_refc.txt")["suffix"]
-            s = workspace_naming(set_cwd+"/../workspace_naming_refc.txt")
-            #s_name = s["src_type"]+"_"+s["suffix"]
-            ref_id = refc_detct_md5(paths)
-            s=s + ("_ID["+ref_id+"]")
+        s = workspace_naming(set_cwd+"/workspace_naming.txt")
+        ref_id = refc_detct_md5(paths)
+        s=s + ("_ID["+ref_id+"]")
     set_cwd = my_curr_info.get_curr_env_path()
-
+    
     #准备workspace
-    WS_model = worksapce_tools.workspace_utils(cwd=set_cwd,platform=run_platform+"_"+my_curr_info.get_curr_env_src_type().upper(),desc=run_codec,space_name_suffix=s)
+    WS_model = worksapce_tools.workspace_utils(cwd=set_cwd,platform=my_curr_info.running_env_name.upper()+"_"+run_platform+"_"+my_curr_info.get_curr_env_src_type().upper(),desc=run_codec,space_name_suffix=s)
     WS_model.open_workspace(src_suffix=my_curr_info.get_curr_env_src_type())
-    my_curr_info.gen_curr_workInfo(workspace=WS_model.get_spacePath().split("/")[-1])
+    my_curr_info.gen_curr_workInfo(workspace=WS_model.get_spacePath())
     setattr(WS_model, "curr", my_curr_info)
-
     my_curr_info.set_wp_path(WS_model.get_spacePath())
     my_curr_info.update_curr_status_db()
-
+    
     if print_only:
         WS_model.gen_WorkingInfo_manager_instance_with_json("markInfo.json",1)
     else:
@@ -216,10 +222,9 @@ def open_env(run_platform,set_cwd,set_space_name_suffix="",bash_id=0,print_only=
         WS_model.boot_testlist_manager_instance()
         WS_model.gen_WorkingInfo_manager_instance_with_json("markInfo.json")
         WS_model.boot_workspace()
-    
     #拷贝ref c的文件到wp中
-    if run_platform == "REF_C":
-        ref_c_dir = WS_model.mkdir_in_workspace("ref_c")
+    if run_platform != "FPGA":
+        ref_c_dir = WS_model.mkdir_in_workspace("run")
         
         run_log_dir = ref_c_dir
         print "run_log_dir::",run_log_dir
@@ -227,6 +232,11 @@ def open_env(run_platform,set_cwd,set_space_name_suffix="",bash_id=0,print_only=
             pp = ref_c_dir + "/"+re.sub(r".+[\\,/]{1,}","",p)
             if not os.path.exists(pp):
                 shutil.copyfile(p,pp)
+        cmd = "cp -r " + set_cwd+"/model "+ref_c_dir
+        os.system(cmd)
+        cmd = "chmod -R -f 775 "+ref_c_dir
+        print cmd
+        os.system(cmd)
 
 
     return WS_model
@@ -235,11 +245,11 @@ def open_env(run_platform,set_cwd,set_space_name_suffix="",bash_id=0,print_only=
 
 def get_cmodel_path(ws_model):
     my_curr_info = getattr(ws_model, "curr")
-    return my_curr_info.get_wp_path()+"/ref_c"
+    return my_curr_info.get_wp_path()+"/run"
 
 def set_TestCaseFilter(ws_model,testlist_manager):
     my_curr_info = getattr(ws_model, "curr")
-    print my_curr_info.get_curr_env_path()
+    print "set_TestCaseFilter::",my_curr_info.get_curr_env_path()
     sys.path.append(my_curr_info.get_curr_env_path() + "/autotest_config_scripts")
     import gen_testlist
     #kwargs与函数的参数需要一一对应
@@ -267,11 +277,12 @@ def ModifyDefaultCfg(ws_model,yuv_path):
     sh_file = open(sh_file_name,"w")
     sh_file.write(cmdline)
     sh_file.close()
-
+    print "sh_file_name::",sh_file_name
+    print "sh_bash_dir::",my_curr_info.get_wp_path()+"/run/"
     curr_info.save_bashFileName(sh_file_name)
     param = {
         "sh_file_name":sh_file_name,
-        "sh_bash_dir":my_curr_info.get_wp_path()+"/ref_c/"
+        "sh_bash_dir":my_curr_info.get_wp_path()+"/run/"
     }
     return param
 
@@ -440,7 +451,7 @@ def parse_cfg_ret_cmdline(ws_model,org_cfg_path,_path_dic,codec_id):
     #os.remove(cfg_path)
 
     cmdline = get_cfg_cmdline(dst_cfg_path,codec_id)
-    print "cmdline::",out_cfg_path
+    print "cmdline::",cmdline
     if cmdline is None:
         print "[error] get_cfg_cmdline error..."
     return cmdline
@@ -608,19 +619,34 @@ def close_env(platform,run_bash):
         print "[CLOSE ENV]"+cwd+"/../envlist_refc_"+str(run_bash)+".txt"
         env_manager = testlistManager(testlist_path=cwd+"/../envlist_refc_"+str(run_bash)+".txt")
         env_manager.boot_testlist_env_status()
+    else:
+        print "[CLOSE ENV]"+cwd+"/../envlist_"+str(run_bash)+".txt"
+        env_manager = testlistManager(testlist_path=cwd+"/../envlist_"+str(run_bash)+".txt")
+        env_manager.boot_testlist_env_status()
     env = env_manager.get_current_testfile()
     env_manager.finish_current_testfile()
     
     
 def load_cmdline(cmdline):
     ret = {}
+    
     cos = cmdline.split(" ")
     title = cos[0]
     ret["title"] = title
     i = 1
+    #print cos
     while i<len(cos)-1:
-        ret[cos[i]] = cos[i+1]
-        i=i+1
+        #print "test1:::::",cos[i]
+        #print "test2:::::",cos[i+1]
+        if not re.match(r"^-",cos[i+1]):
+            ret[cos[i]] = cos[i+1]
+            #print ">>",cos[i],"=",cos[i+1]
+            i=i+2
+        else:
+            ret[cos[i]] = "NULL"
+            #print ">>",cos[i],"=NULL"
+            i=i+1
+    #print ret
     return ret
 
 
@@ -644,7 +670,7 @@ def gen_my_recon_yuv_dict(recon_yuv_path,case_info_dic):
 def do_recon_check(ws_model,platform,src_recon_path,output_name="deblock.yuv",save_recon_yuv_flag=0):
     if platform == "FPGA":
         pass
-    elif platform == "REF_C": 
+    else: 
         from recon_check import recon_check
         if hasattr(glob,"case_info_dict"):
             #my_yuv_info_dic的具体keys需要查询"gen_testlist.gen_case_info_dict()"
@@ -662,6 +688,8 @@ def do_recon_check(ws_model,platform,src_recon_path,output_name="deblock.yuv",sa
             recon_yuv_path = recon_dir + "/" + output_name
             #拷贝recon数据
             shutil.copyfile(org_recon_yuv_path,recon_yuv_path)
+            print "recon_yuv_path:",recon_yuv_path
+            #time.sleep(10)
         else:
             recon_yuv_path = org_recon_yuv_path
         #md5 存放的位置可更换
