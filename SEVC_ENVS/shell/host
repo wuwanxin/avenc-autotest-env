@@ -1,0 +1,47 @@
+#!/bin/bash
+input=""
+output=""
+width=""
+height=""
+
+
+while [ -n "$1" ]
+    do
+        case "$1" in
+            -i|--input)
+                echo "set input param:$2"
+                input="$2"
+                shift 2
+                ;;
+            -o|--output)
+                echo "set output param:$2"
+                output="$2"
+                shift 2
+                ;;
+            -x|--width)
+                echo "set width param:$2"
+                width="$2"
+                shift 2
+                ;;
+            -y|--height)
+                echo "set height param:$2"
+                height="$2"
+                shift 2
+                ;;
+            --)
+                shift
+                break
+                ;;
+            *)
+                shift 2
+                ;;
+        esac
+    done
+
+cd model
+echo "./sevc_host -e $input $width $height"
+./sevc_host -e $input $width $height
+cp testout/check_up_layer2.yuv recon.yuv
+
+cp str_mix.bin $output
+cd -

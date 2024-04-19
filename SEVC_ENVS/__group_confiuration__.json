@@ -1,0 +1,30 @@
+{
+	"group_configured_by":"json",
+	"group_fixed_mem_config":[
+		
+	],
+	"group_global_params":{
+
+	},
+	"envs":[
+		{
+			"env_name":"1.sevc-base-hevc",
+			"env_configured_by":"json",
+			"env_params":{
+				"codec":"hevc"
+			},
+			"mark":[
+				{
+					"mark_name":"gop",
+					"mark_rules":{
+						"--intraPicRate":[1],
+						"--qpHdr":"#"
+					}
+				}
+			]
+		}
+		
+	]
+
+
+}

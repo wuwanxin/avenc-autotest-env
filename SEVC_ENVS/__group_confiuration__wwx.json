@@ -1,0 +1,50 @@
+{
+	"group_configured_by":"json",
+	"group_fixed_mem_config":[
+		
+	],
+	"group_global_params":{
+
+	},
+	"envs":[
+		{
+			"env_name":"1.sevc-base-hevc",
+			"env_configured_by":"json",
+			"env_params":{
+				"codec":"hevc"
+			},
+			"mark":[
+				{
+					"mark_name":"gop",
+					"mark_rules":{
+						"--intraPicRate":[1,15,30],
+						"--qpHdr":"#"
+					}
+				},
+				{
+					"mark_name":"no_rc",
+					"mark_rules":{
+						"--picRc":0,
+						"--ctbRc":0,
+						"--qpHdr":[26,30],
+						"--fixedIntraQp":[26,30]
+					}
+				},
+				{
+					"mark_name":"framerate",
+					"mark_rules":{
+						"--inputRateNumer":[12,25],
+						"--inputRateDenom":1,
+						"--outputRateNumer":[12,25],
+						"--outputRateDenom":1,
+						"--qpHdr":"#"
+					}
+					
+				}
+			]
+		}
+		
+	]
+
+
+}
